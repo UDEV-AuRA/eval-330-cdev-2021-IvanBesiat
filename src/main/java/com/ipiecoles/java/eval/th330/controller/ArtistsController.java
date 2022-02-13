@@ -1,7 +1,7 @@
 package com.ipiecoles.java.eval.th330.controller;
 
 import com.ipiecoles.java.eval.th330.model.Artist;
-import com.ipiecoles.java.eval.th330.repository.ArtistRepository;
+import com.ipiecoles.java.eval.th330.service.AlbumService;
 import com.ipiecoles.java.eval.th330.service.ArtistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
@@ -22,6 +21,8 @@ public class ArtistsController {
 
     @Autowired
     private ArtistService artistsvc;
+    @Autowired
+    private AlbumService albumsvc;
 
     @RequestMapping(
             method = RequestMethod.GET,
@@ -78,26 +79,36 @@ public class ArtistsController {
 
     @RequestMapping(
             method = RequestMethod.POST,
-            value = "/new",
+            value = "/{id}",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
     public RedirectView insertArtist(Artist artist){
         if(artist.getId() == null){
             artistsvc.creerArtiste(artist);
+            return new RedirectView("/artists?page=0&size=10&sortProperty=name&sortDirection=ASC");
         }
         else{
             artistsvc.updateArtiste(artist.getId(), artist);
+            return new RedirectView("/artists/" + artist.getId());
         }
-        return new RedirectView("/Artists/" + artist.getId());
     }
 
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{id}/delete"
     )
-    public RedirectView deleteEmploye(@PathVariable Long id){
+    public RedirectView deleteArtist(@PathVariable Long id){
         artistsvc.deleteArtist(id);
         return new RedirectView("/artists?page=0&size=10&sortProperty=name&sortDirection=ASC");
+    }
+
+    @RequestMapping(
+            method = RequestMethod.GET,
+            value = "/{artistid}/album/{albumid}/delete"
+    )
+    public RedirectView deleteAlbum(@PathVariable Long artistid, @PathVariable Long albumid){
+        albumsvc.deleteAlbum(albumid);
+        return new RedirectView("/artists/{artistid}");
     }
 }
